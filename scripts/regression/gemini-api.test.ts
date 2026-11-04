@@ -4,7 +4,7 @@
  */
 import assert from 'node:assert/strict';
 import { chartToPromptText, SYSTEM_PROMPT } from '../../lib/ai/chart-context';
-import { askGemini, toClientStream, toContents } from '../../lib/ai/gemini';
+import { askGemini, MODEL_CHAIN, toClientStream, toContents } from '../../lib/ai/gemini';
 import type { ZiweiChart } from '../../lib/ziwei/types';
 
 const SECRET_NAME = 'Nguyễn Văn Bí Mật';
@@ -126,14 +126,63 @@ async function main() {
   assert.equal(String(sent.init.body).includes(KEY), false);
   assert.equal((sent.init.headers as Record<string, string>)['x-goog-api-key'], KEY);
 
-  // Lỗi từ Gemini ra thông báo tiếng Việt, không lộ key
-  reply = new Response('quota', { status: 429 });
-  const limited = await askGemini(SYSTEM_PROMPT, contents, { GEMINI_API_KEY: KEY });
+  // Model quá tải hoặc hết lượt thì chuyển sang model sau
+  let script: (() => Response | Promise<Response>)[] = [];
+  const tried: string[] = [];
+  globalThis.fetch = (async (url: string) => {
+    tried.push(/models\/([^:]+):/.exec(url)![1]);
+    return (script.shift() ?? (() => new Response('quota', { status: 429 })))();
+  }) as typeof fetch;
+
+  script = [
+    () => new Response('overloaded', { status: 503 }),
+    () => new Response('quota', { status: 429 }),
+    () => new Response(streamOf([new TextEncoder().encode(part('Dự phòng'))])),
+  ];
+  const fallback = await askGemini(SYSTEM_PROMPT, contents, { GEMINI_API_KEY: KEY });
+  assert.equal(fallback.status, 200);
+  assert.equal(deltas(await fallback.text()), 'Dự phòng');
+  assert.deepEqual(tried, MODEL_CHAIN.slice(0, 3));
+
+  // Model treo thì hủy theo giới hạn thời gian rồi thử tiếp
+  tried.length = 0;
+  let aborted = 0;
+  globalThis.fetch = (async (url: string, init: RequestInit) => {
+    tried.push(/models\/([^:]+):/.exec(url)![1]);
+    if (tried.length === 1) {
+      return new Promise<Response>((_, reject) => init.signal!.addEventListener('abort', () => {
+        aborted++;
+        reject(new Error('aborted'));
+      }));
+    }
+    return new Response(streamOf([new TextEncoder().encode(part('Sau khi treo'))]));
+  }) as typeof fetch;
+  const afterHang = await askGemini(SYSTEM_PROMPT, contents, { GEMINI_API_KEY: KEY, GEMINI_TIMEOUT_MS: '20' });
+  assert.equal(deltas(await afterHang.text()), 'Sau khi treo');
+  assert.equal(aborted, 1);
+
+  // GEMINI_MODEL được thử trước và không bị lặp
+  tried.length = 0;
+  globalThis.fetch = (async (url: string) => {
+    tried.push(/models\/([^:]+):/.exec(url)![1]);
+    return new Response('quota', { status: 429 });
+  }) as typeof fetch;
+
+  const limited = await askGemini(SYSTEM_PROMPT, contents, { GEMINI_API_KEY: KEY, GEMINI_MODEL: 'gemini-3.6-flash' });
+  assert.equal(tried[0], 'gemini-3.6-flash');
+  assert.equal(tried.length, MODEL_CHAIN.length);
+  assert.equal(new Set(tried).size, tried.length);
   assert.equal(limited.status, 429);
   assert.match((await limited.json()).error, /hết lượt miễn phí/);
 
-  reply = new Response('API key not valid', { status: 400 });
+  // Key sai thì dừng ngay, không thử các model khác
+  tried.length = 0;
+  globalThis.fetch = (async (url: string) => {
+    tried.push(url);
+    return new Response('API key not valid', { status: 400 });
+  }) as typeof fetch;
   const invalid = await askGemini(SYSTEM_PROMPT, contents, { GEMINI_API_KEY: KEY });
+  assert.equal(tried.length, 1);
   assert.match((await invalid.json()).error, /từ chối API key/);
 
   globalThis.fetch = realFetch;

@@ -440,6 +440,13 @@ Việc cụ thể nên làm dựa trên Tứ Hóa này.`;
             );
           })}
         </AnimatePresence>
+
+        {/* Đang chờ AI: tin hỏi tự động bị ẩn nên cần báo riêng */}
+        {loading && messages[messages.length - 1]?.role === 'user' && (
+          <p className="text-[10px] animate-pulse" style={{ color: 'var(--t-faint)' }}>
+            Đang tạo luận giải, có thể mất tới một phút…
+          </p>
+        )}
       </div>
 
       {/* ── Input ── */}

@@ -9,7 +9,9 @@ export interface ChatMessage {
   content: string;
 }
 
-export const DEFAULT_MODEL = 'gemini-3.8-flash';
+/** Các model có gói miễn phí, ưu tiên từ trên xuống; có thể đặt GEMINI_MODEL để chọn model đầu tiên. */
+export const MODEL_CHAIN = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
+const DEFAULT_TIMEOUT_MS = 30_000;
 const API_ROOT = 'https://generativelanguage.googleapis.com/v1beta/models';
 const MAX_MESSAGES = 20;
 const MAX_MESSAGE_CHARS = 8000;
@@ -109,7 +111,30 @@ export function toClientStream(body: ReadableStream<Uint8Array>): ReadableStream
   });
 }
 
-/** Gửi một lượt hội thoại tới Gemini và trả về Response cho route. */
+/** Một lần gọi model. Hết giờ chờ phản hồi đầu tiên thì hủy, nhưng không cắt luồng đang chạy. */
+async function callModel(
+  model: string,
+  apiKey: string,
+  body: string,
+  timeoutMs: number,
+): Promise<Response | null> {
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), timeoutMs);
+  try {
+    return await fetch(`${API_ROOT}/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      body,
+      signal: abort.signal,
+    });
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Gửi một lượt hội thoại tới Gemini, tự chuyển model khi model trước quá tải hoặc hết lượt. */
 export async function askGemini(
   systemPrompt: string,
   contents: ReturnType<typeof toContents>,
@@ -119,32 +144,45 @@ export async function askGemini(
   if (!apiKey) return json(503, NO_KEY);
   if (!contents.length) return json(400, 'Yêu cầu không có nội dung.');
 
-  const model = env.GEMINI_MODEL?.trim() || DEFAULT_MODEL;
-
-  let upstream: Response;
-  try {
-    upstream = await fetch(`${API_ROOT}/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt }] },
-        contents,
-        generationConfig: { temperature: 0.6, maxOutputTokens: 8192 },
-      }),
-    });
-  } catch {
-    return json(502, 'Không kết nối được tới Gemini. Hãy kiểm tra Internet rồi thử lại.');
-  }
-
-  if (!upstream.ok || !upstream.body) {
-    const detail = await upstream.text().catch(() => '');
-    return json(upstream.status === 200 ? 502 : upstream.status, friendlyError(upstream.status, detail));
-  }
-
-  return new Response(toClientStream(upstream.body), {
-    headers: {
-      'Content-Type': 'text/event-stream; charset=utf-8',
-      'Cache-Control': 'no-cache, no-transform',
-    },
+  const models = [...new Set([env.GEMINI_MODEL?.trim() || MODEL_CHAIN[0], ...MODEL_CHAIN])];
+  const timeoutMs = Number(env.GEMINI_TIMEOUT_MS) || DEFAULT_TIMEOUT_MS;
+  const body = JSON.stringify({
+    system_instruction: { parts: [{ text: systemPrompt }] },
+    contents,
+    generationConfig: { temperature: 0.6, maxOutputTokens: 8192 },
   });
+
+  let lastStatus = 0;
+  let lastDetail = '';
+  let unreachable = 0;
+
+  for (const model of models) {
+    const upstream = await callModel(model, apiKey, body, timeoutMs);
+
+    if (!upstream) {
+      unreachable++;
+      continue;
+    }
+    if (upstream.ok && upstream.body) {
+      return new Response(toClientStream(upstream.body), {
+        headers: {
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+        },
+      });
+    }
+
+    lastStatus = upstream.status;
+    lastDetail = await upstream.text().catch(() => '');
+    // Lỗi do key hoặc yêu cầu thì đổi model cũng vô ích.
+    const worthRetry = upstream.status === 429 || upstream.status === 404 || upstream.status >= 500;
+    if (!worthRetry) break;
+  }
+
+  if (!lastStatus) {
+    return json(502, unreachable === models.length
+      ? 'Gemini không phản hồi kịp. Hãy kiểm tra Internet hoặc thử lại sau ít phút.'
+      : 'Không kết nối được tới Gemini. Hãy thử lại.');
+  }
+  return json(lastStatus === 200 ? 502 : lastStatus, friendlyError(lastStatus, lastDetail));
 }
