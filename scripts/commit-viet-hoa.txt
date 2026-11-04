@@ -1,0 +1,10 @@
+Việt hóa giao diện, múi giờ Việt Nam và luận giải Gemini
+
+- Thêm tầng dịch hiển thị lib/i18n, không đổi logic lập lá số
+- Thêm 63 tỉnh thành và múi giờ lịch sử Việt Nam
+- Thêm bản dịch tiếng Việt cho cổ thư và tìm kiếm theo bản dịch
+- Thêm /api/interpret và /api/heming gọi Gemini, không gửi họ tên và nơi sinh
+- Thêm file chạy, dán key và lưu lên GitHub trên Windows
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Vp4MRyWYtvEAPqdrA3fWcn

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import type { Palace, Star } from '@/lib/ziwei/types';
 import { STEMS, BRANCHES } from '@/lib/ziwei/constants';
 import clsx from 'clsx';
+import { vi } from '@/lib/i18n/vi';
 
 interface PalaceCellProps {
   palace: Palace;
@@ -47,8 +48,8 @@ const SiHuaBadge = ({
       )}
       onClick={onClick}
     >
-      {overlay && label && <span className="mr-px opacity-70">{label}</span>}
-      {siHua}
+      {vi(overlay && label && <span className="mr-0.5 opacity-70">{vi(label)}</span>)}
+      {vi(siHua)}
     </span>
   );
 };
@@ -92,16 +93,16 @@ export default function PalaceCell({
       }}
     >
       {/* 大限年龄 */}
-      {daXianAge && (
+      {vi(daXianAge && (
         <div className={clsx(
           'absolute top-1 right-1 text-[9px] font-mono tabular-nums',
           isCurrentDaXian ? 'text-purple-400' : ''
         )}
           style={!isCurrentDaXian ? { color: 'var(--t-faint)', opacity: 0.75 } : undefined}
         >
-          {daXianAge[0]}–{daXianAge[1]}
+          {vi(daXianAge[0])}–{vi(daXianAge[1])}
         </div>
-      )}
+      ))}
 
       {/* 宫名行 */}
       <div className="flex items-center gap-1 mb-0.5 pr-8">
@@ -110,24 +111,21 @@ export default function PalaceCell({
         )}
           style={!isMingGong && !isShenGong ? { color: 'var(--t-faint)' } : undefined}
         >
-          {name}
+          {vi(name)}
         </span>
-        {isMingGong && (
-          <span className="text-[7px] text-amber-500/80 border border-amber-500/30 px-0.5 rounded leading-tight">命</span>
-        )}
-        {isShenGong && (
-          <span className="text-[7px] text-sky-500/80 border border-sky-500/30 px-0.5 rounded leading-tight">身</span>
-        )}
+        {vi(isShenGong && (
+          <span className="text-[7px] text-sky-500/80 border border-sky-500/30 px-0.5 rounded leading-tight">{vi("身")}</span>
+        ))}
       </div>
 
       {/* 干支 */}
-      <div className="text-[9px] font-mono mb-1" style={{ color: 'var(--t-faint)', opacity: 0.75 }}>{ganzhi}</div>
+      <div className="text-[9px] font-mono mb-1" style={{ color: 'var(--t-faint)', opacity: 0.75 }}>{vi(ganzhi)}</div>
 
       {/* 主星 */}
       <div className="flex flex-col gap-0.5 flex-1">
-        {majorStars.length === 0 && (
-          <span className="text-[10px] italic" style={{ color: 'var(--t-faint)', opacity: 0.6 }}>空宫</span>
-        )}
+        {vi(majorStars.length === 0 && (
+          <span className="text-[10px] italic" style={{ color: 'var(--t-faint)', opacity: 0.6 }}>{vi("空宫")}</span>
+        ))}
         {majorStars.map((star) => {
           const overlaySiHua = overlayStarSiHua?.[star.name];
           return (
@@ -140,61 +138,61 @@ export default function PalaceCell({
                 'text-[13px] leading-tight font-bold tracking-tight cursor-pointer hover:brightness-125 transition-all',
                 star.brightness === 'bright' ? 'text-amber-300' : star.brightness === 'dim' ? 'text-amber-700/80' : 'text-amber-500',
               )}>
-                {star.name}
+                {vi(star.name)}
               </span>
-              {star.siHua && <SiHuaBadge siHua={star.siHua} />}
-              {overlaySiHua && (
+              {vi(star.siHua && <SiHuaBadge siHua={star.siHua} />)}
+              {vi(overlaySiHua && (
                 <SiHuaBadge
                   siHua={overlaySiHua}
                   overlay
-                  label={overlayLabel}
+                  label={vi(overlayLabel)}
                   onClick={e => {
                     e.stopPropagation();
                     onSiHuaClick?.(star.name, overlaySiHua);
                   }}
                 />
-              )}
+              ))}
             </div>
           );
         })}
       </div>
 
       {/* 吉星 */}
-      {luckyStars.length > 0 && (
+      {vi(luckyStars.length > 0 && (
         <div className="flex flex-wrap gap-x-1 mt-0.5">
           {luckyStars.map(s => {
             const overlaySiHua = overlayStarSiHua?.[s.name];
             return (
               <span key={s.name} className="inline-flex items-center text-[9px] text-sky-500/70 leading-tight">
-                {s.name}
-                {s.siHua && <SiHuaBadge siHua={s.siHua} />}
-                {overlaySiHua && (
+                {vi(s.name)}
+                {vi(s.siHua && <SiHuaBadge siHua={s.siHua} />)}
+                {vi(overlaySiHua && (
                   <SiHuaBadge
                     siHua={overlaySiHua}
                     overlay
-                    label={overlayLabel}
+                    label={vi(overlayLabel)}
                     onClick={e => {
                       e.stopPropagation();
                       onSiHuaClick?.(s.name, overlaySiHua);
                     }}
                   />
-                )}
+                ))}
               </span>
             );
           })}
         </div>
-      )}
+      ))}
 
       {/* 煞星 */}
-      {shaStars.length > 0 && (
+      {vi(shaStars.length > 0 && (
         <div className="flex flex-wrap gap-x-1">
           {shaStars.map(s => (
             <span key={s.name} className="text-[9px] text-red-500/60 leading-tight">
-              {s.name}{s.siHua && <SiHuaBadge siHua={s.siHua} />}
+              {vi(s.name)}{vi(s.siHua && <SiHuaBadge siHua={s.siHua} />)}
             </span>
           ))}
         </div>
-      )}
+      ))}
 
     </motion.div>
   );

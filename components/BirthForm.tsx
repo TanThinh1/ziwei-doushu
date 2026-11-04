@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { BirthInfo } from '@/lib/ziwei/types';
 import { SHICHEN } from '@/lib/ziwei/constants';
 import { useTheme } from '@/components/ThemeProvider';
-import { PROVINCES } from '@/lib/ziwei/cities';
+import { VN_REGIONS, suggestVnUtcOffset } from '@/lib/ziwei/cities-vn';
 import { formToBirthInfo, calcTrueSolarBranch } from '@/lib/ziwei/share';
+import { vi } from '@/lib/i18n/vi';
 
 export interface BirthFormState {
   name: string;
@@ -19,6 +20,10 @@ export interface BirthFormState {
   city: string;
   longitude: number;
   gender: 'male' | 'female';
+  /** 'auto' = suy từ năm sinh và nơi sinh; còn lại là số phút lệch UTC */
+  tzChoice?: string;
+  /** Múi giờ đồng hồ lúc sinh; chỉ có khi đã chọn nơi sinh */
+  utcOffsetMinutes?: number;
 }
 
 interface BirthFormProps {
@@ -55,19 +60,32 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
     city: initialData?.city ?? '',
     longitude: initialData?.longitude ?? 120,
     gender: initialData?.gender ?? 'male',
+    tzChoice: initialData?.tzChoice ?? 'auto',
   });
 
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   // 表单状态变化时实时同步给父级（合盘等场景下父级靠这个收集双方数据）
+  const place = useMemo(() => {
+    const region = VN_REGIONS.find(p => p.name === form.province);
+    return region?.cities.find(c => c.name === form.city);
+  }, [form.province, form.city]);
+
+  const autoOffset = suggestVnUtcOffset(
+    parseInt(form.year) || 2000, parseInt(form.month) || 1, parseInt(form.day) || 1, !!place?.south,
+  );
+  const utcOffset = !form.province ? undefined
+    : form.tzChoice && form.tzChoice !== 'auto' ? Number(form.tzChoice) : autoOffset;
+  const resolved: BirthFormState = { ...form, utcOffsetMinutes: utcOffset };
+
   useEffect(() => {
-    onFormSave?.({ ...form });
+    onFormSave?.(resolved);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form]);
 
   const cityList = useMemo(() => {
-    const prov = PROVINCES.find(p => p.name === form.province);
+    const prov = VN_REGIONS.find(p => p.name === form.province);
     return prov ? prov.cities : [];
   }, [form.province]);
 
@@ -77,10 +95,11 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
       parseInt(form.clockHour) || 0,
       parseInt(form.clockMinute) || 0,
       form.longitude,
+      utcOffset,
     );
-  }, [form.clockHour, form.clockMinute, form.longitude, form.unknownTime]);
+  }, [form.clockHour, form.clockMinute, form.longitude, form.unknownTime, utcOffset]);
 
-  const offsetMin = Math.round((form.longitude - 120) * 4);
+  const offsetMin = Math.round((form.longitude - (utcOffset ?? 480) / 4) * 4);
   const shichenInfo = SHICHEN[branch];
 
   // ─── 校验逻辑 ───────────────────────────────────────────
@@ -112,21 +131,21 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
   const showSummary = steps[0] && steps[2] && !hasError;
   const summaryText = showSummary
     ? [
-        `${y}年${m}月${d}日`,
+        vi(`${y}年${m}月${d}日`),
         form.city || (form.province ? form.province : ''),
-        form.unknownTime ? '时辰不详' : `${SHICHEN_NAMES[branch]}时`,
-        form.gender === 'male' ? '男' : '女',
+        vi(form.unknownTime ? '时辰不详' : `${SHICHEN_NAMES[branch]}时`),
+        vi(form.gender === 'male' ? '男' : '女'),
       ].filter(Boolean).join(' · ')
     : '';
 
   const handleProvince = (prov: string) => {
-    const provData = PROVINCES.find(p => p.name === prov);
+    const provData = VN_REGIONS.find(p => p.name === prov);
     const firstCity = provData?.cities[0];
     setForm({ ...form, province: prov, city: firstCity?.name || '', longitude: firstCity?.longitude ?? 120 });
   };
 
   const handleCity = (cityName: string) => {
-    const prov = PROVINCES.find(p => p.name === form.province);
+    const prov = VN_REGIONS.find(p => p.name === form.province);
     const cityData = prov?.cities.find(c => c.name === cityName);
     setForm({ ...form, city: cityName, longitude: cityData?.longitude ?? 120 });
   };
@@ -136,10 +155,10 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
     setSubmitAttempted(true);
     setTouched({ year: true, month: true, day: true });
     if (hasError) return;
-    onFormSave?.({ ...form });
+    onFormSave?.(resolved);
     // 统一走 lib/ziwei/share.ts 的转换：它负责晚子时换日（23:00–23:59 按次日排盘）。
     // 在这里手拼 BirthInfo 会绕过这条规则，使 /chart 与 /heming 对同一份输入排出相差一天的盘。
-    onSubmit(formToBirthInfo(form));
+    onSubmit(formToBirthInfo(resolved));
   };
 
   // ─── 样式变量 ────────────────────────────────────────────
@@ -177,7 +196,7 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
   function FieldError({ msg }: { msg: string }) {
     return (
       <AnimatePresence>
-        {msg && (
+        {vi(msg && (
           <motion.p
             initial={{ opacity: 0, y: -4, height: 0 }}
             animate={{ opacity: 1, y: 0, height: 'auto' }}
@@ -185,9 +204,9 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
             transition={{ duration: 0.18 }}
             style={{ color: errorClr, fontSize: '11px', marginTop: '4px' }}
           >
-            ✕ {msg}
+            ✕ {vi(msg)}
           </motion.p>
-        )}
+        ))}
       </AnimatePresence>
     );
   }
@@ -203,9 +222,7 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
       style={{ background: bg, border: `1px solid ${border}`, borderRadius: '24px', padding: '28px', backdropFilter: 'blur(20px)' }}
     >
       {/* 标题 */}
-      <h3 style={{ color: goldText, fontSize: '12px', letterSpacing: '0.4em', textAlign: 'center', marginBottom: '20px', fontWeight: 500 }}>
-        ── 输入生辰八字 ──
-      </h3>
+      <h3 style={{ color: goldText, fontSize: '12px', letterSpacing: '0.4em', textAlign: 'center', marginBottom: '20px', fontWeight: 500 }}>{vi("── 输入生辰八字 ──")}</h3>
 
       {/* ── 进度条 ── */}
       <div style={{ display: 'flex', gap: '4px', marginBottom: '20px' }}>
@@ -221,10 +238,10 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
 
       {/* ── 姓名 ── */}
       <div style={{ marginBottom: '16px' }}>
-        <label style={{ display: 'block', fontSize: '11px', color: labelClr, marginBottom: '6px', letterSpacing: '0.05em' }}>姓名（可选）</label>
+        <label style={{ display: 'block', fontSize: '11px', color: labelClr, marginBottom: '6px', letterSpacing: '0.05em' }}>{vi("姓名（可选）")}</label>
         <input
           type="text"
-          placeholder="请输入姓名"
+          placeholder={vi("请输入姓名")}
           value={form.name}
           onChange={e => setForm({ ...form, name: e.target.value })}
           style={inputStyle}
@@ -235,7 +252,7 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
 
       {/* ── 出生日期 ── */}
       <div style={{ marginBottom: '16px' }}>
-        <label style={{ display: 'block', fontSize: '11px', color: labelClr, marginBottom: '6px', letterSpacing: '0.05em' }}>出生日期（公历）</label>
+        <label style={{ display: 'block', fontSize: '11px', color: labelClr, marginBottom: '6px', letterSpacing: '0.05em' }}>{vi("出生日期（公历）")}</label>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
           <div>
             <select
@@ -244,9 +261,9 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
               style={showErr('year') && errors.year ? errorInputStyle : inputStyle}
               required
             >
-              <option value="">年份</option>
+              <option value="">{vi("年份")}</option>
               {Array.from({ length: 127 }, (_, i) => 2026 - i).map(yr => (
-                <option key={yr} value={String(yr)}>{yr}</option>
+                <option key={yr} value={String(yr)}>{vi(yr)}</option>
               ))}
             </select>
             <FieldError msg={showErr('year') ? errors.year : ''} />
@@ -258,9 +275,9 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
               style={showErr('month') && errors.month ? errorInputStyle : inputStyle}
               required
             >
-              <option value="">月份</option>
+              <option value="">{vi("月份")}</option>
               {Array.from({ length: 12 }, (_, i) => i + 1).map(mo => (
-                <option key={mo} value={String(mo)}>{mo} 月</option>
+                <option key={mo} value={String(mo)}>{vi(`${mo}月`)}</option>
               ))}
             </select>
             <FieldError msg={showErr('month') ? errors.month : ''} />
@@ -272,9 +289,9 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
               style={showErr('day') && errors.day ? errorInputStyle : inputStyle}
               required
             >
-              <option value="">日期</option>
+              <option value="">{vi("日期")}</option>
               {Array.from({ length: 31 }, (_, i) => i + 1).map(dy => (
-                <option key={dy} value={String(dy)}>{dy} 日</option>
+                <option key={dy} value={String(dy)}>{vi(`${dy}日`)}</option>
               ))}
             </select>
             <FieldError msg={showErr('day') ? errors.day : ''} />
@@ -284,7 +301,7 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
 
       {/* ── 出生地点 ── */}
       <div style={{ marginBottom: '16px' }}>
-        <label style={{ display: 'block', fontSize: '11px', color: labelClr, marginBottom: '6px', letterSpacing: '0.05em' }}>出生地点（用于真太阳时校正）</label>
+        <label style={{ display: 'block', fontSize: '11px', color: labelClr, marginBottom: '6px', letterSpacing: '0.05em' }}>{vi("出生地点（用于真太阳时校正）")}</label>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
           <select
             value={form.province}
@@ -293,9 +310,9 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
             onFocus={e => { e.target.style.borderColor = focusBorder; }}
             onBlur={e => { e.target.style.borderColor = inputBorder; }}
           >
-            <option value="">省份 / 直辖市</option>
-            {PROVINCES.map(p => (
-              <option key={p.name} value={p.name}>{p.name}</option>
+            <option value="">{vi("省份 / 直辖市")}</option>
+            {VN_REGIONS.map(p => (
+              <option key={p.name} value={p.name}>{vi(p.name)}</option>
             ))}
           </select>
           <select
@@ -306,14 +323,14 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
             onFocus={e => { e.target.style.borderColor = focusBorder; }}
             onBlur={e => { e.target.style.borderColor = inputBorder; }}
           >
-            <option value="">{form.province ? '城市' : '先选省份'}</option>
+            <option value="">{vi(form.province ? '城市' : '先选省份')}</option>
             {cityList.map(c => (
-              <option key={c.name} value={c.name}>{c.name}</option>
+              <option key={c.name} value={c.name}>{vi(c.name)}</option>
             ))}
           </select>
         </div>
         <AnimatePresence mode="wait">
-          {form.province ? (
+          {vi(form.province ? (
             <motion.p
               key="location-info"
               initial={{ opacity: 0 }}
@@ -321,8 +338,7 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
               exit={{ opacity: 0 }}
               style={{ fontSize: '10px', color: isDark ? 'rgba(180,210,235,0.85)' : 'rgba(100,70,10,0.5)', marginTop: '5px' }}
             >
-              {form.city || '（请选择城市）'} · 经度 {form.longitude.toFixed(1)}°E · 时差 {offsetMin > 0 ? '+' : ''}{offsetMin} 分钟
-            </motion.p>
+              {vi(form.city || '（请选择城市）')}{vi(" · 经度 ")}{vi(form.longitude.toFixed(1))}{vi("°E · 时差 ")}{vi(offsetMin > 0 ? '+' : '')}{vi(offsetMin)}{vi(" 分钟")}</motion.p>
           ) : (
             <motion.p
               key="location-hint"
@@ -330,16 +346,34 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               style={{ fontSize: '10px', color: isDark ? 'rgba(165,185,210,0.7)' : 'rgba(140,100,20,0.45)', marginTop: '5px' }}
-            >
-              * 倪海厦批命用真太阳时，建议填写出生地以自动校正时辰
-            </motion.p>
-          )}
+            >* Nghê Hải Hạ luận số theo giờ mặt trời thực, nên chọn nơi sinh để tự hiệu chỉnh. Sinh ở nước ngoài thì để trống, giờ sẽ giữ nguyên.</motion.p>
+          ))}
         </AnimatePresence>
       </div>
 
+      {/* ── Múi giờ lúc sinh ── */}
+      {form.province && (
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', fontSize: '11px', color: labelClr, marginBottom: '6px', letterSpacing: '0.05em' }}>Múi giờ trên đồng hồ lúc sinh</label>
+          <select
+            value={form.tzChoice ?? 'auto'}
+            onChange={e => setForm({ ...form, tzChoice: e.target.value })}
+            style={inputStyle}
+          >
+            <option value="auto">Tự động theo ngày và nơi sinh (UTC+{autoOffset / 60})</option>
+            <option value="420">UTC+7</option>
+            <option value="480">UTC+8</option>
+            <option value="540">UTC+9</option>
+          </select>
+          <p style={{ fontSize: '10px', color: isDark ? 'rgba(165,185,210,0.7)' : 'rgba(140,100,20,0.45)', marginTop: '5px' }}>
+            Miền Nam dùng UTC+8 từ 1960 đến 13/6/1975. Vùng chiến sự 1947–1954 có thể khác, khi đó hãy chọn tay.
+          </p>
+        </div>
+      )}
+
       {/* ── 出生时间 ── */}
       <div style={{ marginBottom: '16px' }}>
-        <label style={{ display: 'block', fontSize: '11px', color: labelClr, marginBottom: '6px', letterSpacing: '0.05em' }}>出生时间（北京时间）</label>
+        <label style={{ display: 'block', fontSize: '11px', color: labelClr, marginBottom: '6px', letterSpacing: '0.05em' }}>Giờ sinh (theo đồng hồ)</label>
         <div style={{ borderRadius: '14px', padding: '12px', background: panelBg, border: `1px solid ${panelBorder}`, opacity: form.unknownTime ? 0.45 : 1, pointerEvents: form.unknownTime ? 'none' : 'auto', transition: 'opacity 0.2s' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
             <select
@@ -348,7 +382,7 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
               style={inputStyle}
             >
               {Array.from({ length: 24 }, (_, i) => i).map(h => (
-                <option key={h} value={String(h)}>{h.toString().padStart(2, '0')} 时</option>
+                <option key={h} value={String(h)}>{h.toString().padStart(2, '0')} giờ</option>
               ))}
             </select>
             <select
@@ -357,21 +391,20 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
               style={inputStyle}
             >
               {Array.from({ length: 60 }, (_, i) => i).map(min => (
-                <option key={min} value={String(min)}>{min.toString().padStart(2, '0')} 分</option>
+                <option key={min} value={String(min)}>{vi(`${min.toString().padStart(2, '0')}分`)}</option>
               ))}
             </select>
           </div>
           {/* 真太阳时结果 */}
           <div style={{ textAlign: 'center', padding: '4px 0' }}>
-            <span style={{ fontSize: '10px', color: isDark ? 'rgba(170,195,220,0.75)' : 'rgba(140,100,20,0.5)' }}>真太阳时 → </span>
+            <span style={{ fontSize: '10px', color: isDark ? 'rgba(170,195,220,0.75)' : 'rgba(140,100,20,0.5)' }}>{vi("真太阳时 → ")}</span>
             <span style={{ fontSize: '15px', color: goldText, fontWeight: 600, letterSpacing: '0.08em' }}>
-              {SHICHEN_NAMES[branch]}时
-            </span>
-            {shichenInfo && (
+              {vi(`${SHICHEN_NAMES[branch]}时`)}</span>
+            {vi(shichenInfo && (
               <span style={{ fontSize: '10px', color: isDark ? 'rgba(170,195,220,0.75)' : 'rgba(140,100,20,0.5)', marginLeft: '4px' }}>
-                （{shichenInfo.range}）
+                ({vi(shichenInfo.range)})
               </span>
-            )}
+            ))}
           </div>
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: '7px', marginTop: '8px', cursor: 'pointer' }}>
@@ -381,15 +414,13 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
             onChange={e => setForm({ ...form, unknownTime: e.target.checked })}
             style={{ width: '14px', height: '14px', borderRadius: '4px', cursor: 'pointer' }}
           />
-          <span style={{ fontSize: '10px', color: isDark ? 'rgba(165,185,210,0.7)' : 'rgba(140,100,20,0.45)' }}>
-            不知道出生时间，以子时（23:00–01:00）起盘
-          </span>
+          <span style={{ fontSize: '10px', color: isDark ? 'rgba(165,185,210,0.7)' : 'rgba(140,100,20,0.45)' }}>{vi("不知道出生时间，以子时（23:00–01:00）起盘")}</span>
         </label>
       </div>
 
       {/* ── 性别 ── */}
       <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'block', fontSize: '11px', color: labelClr, marginBottom: '6px', letterSpacing: '0.05em' }}>性别</label>
+        <label style={{ display: 'block', fontSize: '11px', color: labelClr, marginBottom: '6px', letterSpacing: '0.05em' }}>{vi("性别")}</label>
         <div style={{ display: 'flex', gap: '10px' }}>
           {(['male', 'female'] as const).map(g => {
             const active = form.gender === g;
@@ -414,7 +445,7 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
                   cursor: 'pointer',
                 }}
               >
-                {isMale ? '♂ 男' : '♀ 女'}
+                {vi(isMale ? '♂ 男' : '♀ 女')}
               </motion.button>
             );
           })}
@@ -423,7 +454,7 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
 
       {/* ── 确认信息 Summary Chip ── */}
       <AnimatePresence>
-        {showSummary && (
+        {vi(showSummary && (
           <motion.div
             initial={{ opacity: 0, y: -8, height: 0, marginBottom: 0 }}
             animate={{ opacity: 1, y: 0, height: 'auto', marginBottom: 12 }}
@@ -441,15 +472,15 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
             }}>
               <span style={{ fontSize: '12px', color: summaryClr }}>✓</span>
               <span style={{ fontSize: '11px', color: summaryClr, letterSpacing: '0.03em', flex: 1 }}>
-                {summaryText}
+                {vi(summaryText)}
               </span>
             </div>
           </motion.div>
-        )}
+        ))}
       </AnimatePresence>
 
       {/* ── 提交按钮 ── */}
-      {!hideSubmit && <motion.button
+      {vi(!hideSubmit && <motion.button
         type="submit"
         disabled={loading}
         whileHover={loading ? {} : { scale: 1.01 }}
@@ -473,17 +504,15 @@ export default function BirthForm({ onSubmit, loading, initialData, onFormSave, 
           transition: 'all 0.2s',
         }}
       >
-        {loading ? (
+        {vi(loading ? (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
             <motion.span
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
               style={{ display: 'inline-block', width: '12px', height: '12px', border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%' }}
-            />
-            紫微起盘中…
-          </span>
-        ) : '立即起盘 · 解命运密码'}
-      </motion.button>}
+            />{vi("紫微起盘中…")}</span>
+        ) : '立即起盘 · 解命运密码')}
+      </motion.button>)}
     </motion.form>
   );
 }

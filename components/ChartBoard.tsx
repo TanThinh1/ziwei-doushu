@@ -5,6 +5,7 @@ import type { ZiweiChart, Palace, Star } from '@/lib/ziwei/types';
 import { BRANCHES, STEMS } from '@/lib/ziwei/constants';
 import PalaceCell from './PalaceCell';
 import TimeNav, { type TimeView, getYearStemIndex, buildSiHuaOverlay } from './TimeNav';
+import { vi } from '@/lib/i18n/vi';
 
 interface ChartBoardProps {
   chart: ZiweiChart;
@@ -108,8 +109,7 @@ export default function ChartBoard({ chart, onStarSelect, onPalaceSelect, onSiHu
           Zi Wei Dou Shu
         </div>
         <h2 className="text-sm tracking-[0.25em] font-medium" style={{ color: 'var(--t-gold)' }}>
-          {chart.birthInfo.name ? `${chart.birthInfo.name} · ` : ''}紫微斗数命盘
-        </h2>
+          {vi(chart.birthInfo.name ? `${chart.birthInfo.name} · ` : '')}{vi("紫微斗数命盘")}</h2>
       </motion.div>
 
       {/* 4x4 命盘网格（含 SVG 叠加层） */}
@@ -158,35 +158,34 @@ export default function ChartBoard({ chart, onStarSelect, onPalaceSelect, onSiHu
           </div>
 
           <div className="text-center space-y-1">
-            <div className="text-[9px] tracking-[0.3em] font-medium" style={{ color: 'var(--t-gold)' }}>紫微斗数</div>
+            <div className="text-[9px] tracking-[0.3em] font-medium" style={{ color: 'var(--t-gold)' }}>{vi("紫微斗数")}</div>
             <div className="text-[10px] space-y-0.5" style={{ color: 'var(--t-faint)' }}>
-              <div>命宫 <span style={{ color: 'var(--t-gold)', opacity: 0.7 }}>{BRANCHES[chart.mingGongBranch]}</span></div>
-              <div>身宫 <span className="text-sky-500/70">{BRANCHES[chart.shenGongBranch]}</span></div>
-              <div className="text-[9px]" style={{ color: 'var(--t-gold)', opacity: 0.75 }}>{chart.wuxingJuName}</div>
+              <div>{vi("命宫 ")}<span style={{ color: 'var(--t-gold)', opacity: 0.7 }}>{vi(BRANCHES[chart.mingGongBranch])}</span></div>
+              <div>{vi("身宫 ")}<span className="text-sky-500/70">{vi(BRANCHES[chart.shenGongBranch])}</span></div>
+              <div className="text-[9px]" style={{ color: 'var(--t-gold)', opacity: 0.75 }}>{vi(chart.wuxingJuName)}</div>
             </div>
           </div>
 
-          {chart.currentDaXianIndex >= 0 && (() => {
+          {vi(chart.currentDaXianIndex >= 0 && (() => {
             const dx = chart.daXians[chart.currentDaXianIndex];
             return (
               <div className="border border-purple-500/30 rounded-lg px-3 py-1.5 text-center"
                 style={{ background: 'rgba(147,51,234,0.06)' }}>
-                <div className="text-[8px] text-purple-500/80 mb-0.5 tracking-wider">当前大限</div>
-                <div className="text-[12px] text-purple-400 font-medium tabular-nums">{dx.startAge}–{dx.endAge}岁</div>
-                <div className="text-[9px] text-purple-500/60">{dx.palaceName}</div>
+                <div className="text-[8px] text-purple-500/80 mb-0.5 tracking-wider">{vi("当前大限")}</div>
+                <div className="text-[12px] text-purple-400 font-medium tabular-nums">{vi(dx.startAge)}–{vi(dx.endAge)} {vi("岁")}</div>
+                <div className="text-[9px] text-purple-500/60">{vi(dx.palaceName)}</div>
               </div>
             );
-          })()}
+          })())}
 
           <div className="text-[8px] text-center leading-relaxed font-mono" style={{ color: 'var(--t-faint)', opacity: 0.75 }}>
-            {chart.lunarInfo.lunarYear}·{chart.lunarInfo.isLeapMonth ? '闰' : ''}
-            {chart.lunarInfo.lunarMonth}·{chart.lunarInfo.lunarDay}
+            Âm lịch {chart.lunarInfo.lunarDay}/{chart.lunarInfo.isLeapMonth ? 'nhuận ' : ''}{Math.abs(chart.lunarInfo.lunarMonth)}/{chart.lunarInfo.lunarYear}
           </div>
         </motion.div>
 
         {/* ── 三方四正 SVG 连线（绝对定位在 grid 内部，受 overflow:hidden 裁切） ── */}
         <AnimatePresence>
-          {sanFangBranches !== null && (
+          {vi(sanFangBranches !== null && (
             <motion.div
               key={`sf-${selectedBranch}`}
               initial={{ opacity: 0 }}
@@ -206,7 +205,7 @@ export default function ChartBoard({ chart, onStarSelect, onPalaceSelect, onSiHu
                 xmlns="http://www.w3.org/2000/svg"
                 style={{ display: 'block' }}
               >
-                {(() => {
+                {vi((() => {
                   // 三角形（三方）+ 一条直线（对宫）
                   const p0 = BRANCH_SVG_POS[sanFangBranches[0]]; // 本宫
                   const p1 = BRANCH_SVG_POS[sanFangBranches[1]]; // 对宫
@@ -254,10 +253,10 @@ export default function ChartBoard({ chart, onStarSelect, onPalaceSelect, onSiHu
                       ))}
                     </>
                   );
-                })()}
+                })())}
               </svg>
             </motion.div>
-          )}
+          ))}
         </AnimatePresence>
       </div>
 
@@ -274,11 +273,9 @@ export default function ChartBoard({ chart, onStarSelect, onPalaceSelect, onSiHu
           { h: '化科', c: 'text-yellow-500 border-yellow-500/30' },
           { h: '化忌', c: 'text-red-500 border-red-500/30' },
         ].map(({ h, c }) => (
-          <span key={h} className={`border px-1.5 py-0.5 rounded-full font-medium ${c}`}>{h}</span>
+          <span key={h} className={`border px-1.5 py-0.5 rounded-full font-medium ${c}`}>{vi(h)}</span>
         ))}
-        <span className="px-1.5 py-0.5 rounded-full" style={{ color: 'var(--t-faint)', border: '1px solid var(--t-border)' }}>
-          点击宫位看三方四正
-        </span>
+        <span className="px-1.5 py-0.5 rounded-full" style={{ color: 'var(--t-faint)', border: '1px solid var(--t-border)' }}>{vi("点击宫位看三方四正")}</span>
       </motion.div>
     </div>
   );

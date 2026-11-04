@@ -9,6 +9,7 @@ import type { Book, Paragraph, SearchHit } from './types';
 import { guSuiFu } from './data/gusuifu';
 import { ziWeiQuanJi } from './data/quanji';
 import { ziWeiQuanShu } from './data/quanshu';
+import { CLASSICS_VI } from './vi-translations.generated';
 
 /** 所有已收录古籍 */
 export const ALL_BOOKS: Book[] = [
@@ -16,6 +17,13 @@ export const ALL_BOOKS: Book[] = [
   ziWeiQuanJi,
   ziWeiQuanShu,
 ];
+
+// Gắn bản dịch tiếng Việt vào từng đoạn; nguyên văn giữ nguyên.
+for (const book of ALL_BOOKS) {
+  for (const chapter of book.chapters) {
+    for (const p of chapter.paragraphs) p.translation = CLASSICS_VI[p.id];
+  }
+}
 
 /** 总段落数（用于首页统计） */
 export const TOTAL_PARAGRAPHS = ALL_BOOKS.reduce(
@@ -65,21 +73,23 @@ export function searchClassics(query: string, limit = 30): SearchHit[] {
   for (const book of ALL_BOOKS) {
     for (const chapter of book.chapters) {
       for (const p of chapter.paragraphs) {
-        const idx = p.text.indexOf(q);
+        // Tìm trong nguyên văn trước, rồi tới bản dịch (không phân biệt hoa thường).
+        const source = p.text.includes(q) ? p.text : (p.translation ?? '');
+        const idx = source === p.text ? p.text.indexOf(q) : source.toLowerCase().indexOf(q.toLowerCase());
         if (idx < 0) continue;
 
         // 提取上下文（前后各 40 字）
         const start = Math.max(0, idx - 40);
-        const end = Math.min(p.text.length, idx + q.length + 40);
-        const before = p.text.slice(start, idx);
-        const matched = p.text.slice(idx, idx + q.length);
-        const after = p.text.slice(idx + q.length, end);
+        const end = Math.min(source.length, idx + q.length + 40);
+        const before = source.slice(start, idx);
+        const matched = source.slice(idx, idx + q.length);
+        const after = source.slice(idx + q.length, end);
 
         const snippet = (start > 0 ? '…' : '')
           + escapeHtml(before)
           + `<mark>${escapeHtml(matched)}</mark>`
           + escapeHtml(after)
-          + (end < p.text.length ? '…' : '');
+          + (end < source.length ? '…' : '');
 
         hits.push({
           bookSlug: book.slug,

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion';
 import StarField from '@/components/StarField';
 import { useTheme, type Theme } from '@/components/ThemeProvider';
-import AnnouncementModal from '@/components/AnnouncementModal';
+import { vi } from '@/lib/i18n/vi';
 
 // ─── 滚动入场 wrapper ────────────────────────────────────
 function FadeIn({
@@ -44,7 +44,7 @@ function ThemeToggle() {
       onClick={toggle}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.93 }}
-      aria-label={isDark ? '切换亮色主题' : '切换暗色主题'}
+      aria-label={vi(isDark ? '切换亮色主题' : '切换暗色主题')}
       className="flex items-center gap-2 px-3 py-1.5 rounded-full border"
       style={{
         borderColor: isDark ? 'rgba(212,168,67,0.3)' : 'rgba(140,100,20,0.35)',
@@ -73,7 +73,7 @@ function ThemeToggle() {
           color: isDark ? 'rgba(212,180,100,0.85)' : 'rgba(110,72,8,0.8)',
           transition: 'color 0.35s ease',
         }}>
-        {isDark ? '暗色' : '亮色'}
+        {vi(isDark ? '暗色' : '亮色')}
       </span>
     </motion.button>
   );
@@ -294,13 +294,13 @@ function FeatureVisual({ index, colors: c }: { index: number; colors: ReturnType
                   color: isActive ? c.goldSolid : c.textFaint,
                   opacity: isCenter ? 0 : 1,
                 }}>
-                {isActive ? '★' : ''}
+                {vi(isActive ? '★' : '')}
               </motion.div>
             );
           })}
         </div>
         <p className="text-[10px] tracking-widest transition-colors duration-300"
-          style={{ color: c.textFaint }}>倪海厦排盘法</p>
+          style={{ color: c.textFaint }}>{vi("倪海厦排盘法")}</p>
       </div>
     );
   }
@@ -316,7 +316,7 @@ function FeatureVisual({ index, colors: c }: { index: number; colors: ReturnType
         ].map(group => (
           <div key={group.group}>
             <div className="text-[11px] tracking-widest mb-2 transition-colors duration-300"
-              style={{ color: c.textFaint }}>{group.group}</div>
+              style={{ color: c.textFaint }}>{vi(group.group)}</div>
             <div className="flex flex-wrap gap-1.5">
               {group.stars.map(s => (
                 <motion.button key={s}
@@ -330,7 +330,7 @@ function FeatureVisual({ index, colors: c }: { index: number; colors: ReturnType
                     background: sel === s ? `${c.goldLine}30` : 'transparent',
                     fontWeight: sel === s ? 600 : 400,
                   }}>
-                  {s}
+                  {vi(s)}
                 </motion.button>
               ))}
             </div>
@@ -338,7 +338,7 @@ function FeatureVisual({ index, colors: c }: { index: number; colors: ReturnType
         ))}
         <div>
           <div className="text-[11px] tracking-widest mb-2 transition-colors duration-300"
-            style={{ color: c.textFaint }}>四化飞星</div>
+            style={{ color: c.textFaint }}>{vi("四化飞星")}</div>
           <div className="flex gap-2 flex-wrap">
             {[['化禄', 'rgba(52,211,153,0.7)'], ['化权', 'rgba(96,165,250,0.7)'], ['化科', 'rgba(250,204,21,0.7)'], ['化忌', 'rgba(248,113,113,0.7)']].map(([label, color]) => (
               <motion.button key={label}
@@ -352,25 +352,25 @@ function FeatureVisual({ index, colors: c }: { index: number; colors: ReturnType
                   background: sel === label ? `${color.replace('0.7', '0.15')}` : 'transparent',
                   fontWeight: sel === label ? 600 : 400,
                 }}>
-                {label}
+                {vi(label)}
               </motion.button>
             ))}
           </div>
         </div>
         <AnimatePresence mode="wait">
-          {selInfo && (
+          {vi(selInfo && (
             <motion.div key={sel}
               initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
               className="rounded-xl p-4 mt-1.5"
               style={{ border: `1px solid ${c.goldLine}`, background: c.featureBg }}>
               <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-sm font-semibold" style={{ color: c.goldSolid }}>{sel}</span>
-                <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ color: c.tagText, border: `1px solid ${c.goldLine}` }}>{selInfo.attr}</span>
+                <span className="text-sm font-semibold" style={{ color: c.goldSolid }}>{vi(sel)}</span>
+                <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ color: c.tagText, border: `1px solid ${c.goldLine}` }}>{vi(selInfo.attr)}</span>
               </div>
-              <p className="text-xs leading-relaxed" style={{ color: c.textSecond }}>{selInfo.brief}</p>
+              <p className="text-xs leading-relaxed" style={{ color: c.textSecond }}>{vi(selInfo.brief)}</p>
             </motion.div>
-          )}
+          ))}
         </AnimatePresence>
       </div>
     );
@@ -396,7 +396,7 @@ function FeatureVisual({ index, colors: c }: { index: number; colors: ReturnType
                 background: m.role === 'user' ? c.starBg : c.featureBg,
                 color: m.role === 'user' ? c.goldSolid : c.textSecond,
               }}>
-              {m.text}
+              {vi(m.text)}
             </div>
           </motion.div>
         ))}
@@ -425,14 +425,12 @@ function FeatureVisual({ index, colors: c }: { index: number; colors: ReturnType
               style={{ background: p.ok ? 'rgba(96,165,250,0.6)' : 'rgba(251,146,60,0.6)' }} />
             <div>
               <div className="text-[11px] font-medium"
-                style={{ color: p.ok ? 'rgba(147,197,253,0.8)' : 'rgba(253,186,116,0.8)' }}>{p.name}</div>
-              <div className="text-[10px]" style={{ color: c.textMuted }}>{p.desc}</div>
+                style={{ color: p.ok ? 'rgba(147,197,253,0.8)' : 'rgba(253,186,116,0.8)' }}>{vi(p.name)}</div>
+              <div className="text-[10px]" style={{ color: c.textMuted }}>{vi(p.desc)}</div>
             </div>
           </motion.div>
         ))}
-        <div className="text-[9px] mt-2 tracking-wider text-center" style={{ color: c.textFaint }}>
-          自动识别 11 种经典格局
-        </div>
+        <div className="text-[9px] mt-2 tracking-wider text-center" style={{ color: c.textFaint }}>{vi("自动识别 11 种经典格局")}</div>
       </div>
     );
   }
@@ -465,7 +463,6 @@ export default function HomePage() {
   return (
     <div style={{ background: c.bgBase, transition: 'background 0.35s ease' }} className="overflow-x-hidden">
       {/* 致用户公告——首次访问全屏覆盖，关闭后才进入首页 */}
-      <AnnouncementModal />
 
       <StarField />
 
@@ -485,25 +482,19 @@ export default function HomePage() {
           background: c.navBg,
         }}>
         <div className="text-[11px] sm:text-xs tracking-[0.3em] sm:tracking-[0.4em] font-medium transition-colors duration-300 flex-shrink-0"
-          style={{ color: c.goldSolid }}>
-          紫微命盘
-        </div>
+          style={{ color: c.goldSolid }}>{vi("紫微命盘")}</div>
         <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
           <ThemeToggle />
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={() => router.push('/heming')}
             className="text-[11px] sm:text-xs px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full transition-all duration-300"
-            style={{ border: `1px solid ${c.navBorder}`, color: c.textMuted }}>
-            合盘
-          </motion.button>
+            style={{ border: `1px solid ${c.navBorder}`, color: c.textMuted }}>{vi("合盘")}</motion.button>
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={() => router.push('/chart')}
             className="text-[11px] sm:text-xs px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full transition-all duration-300"
-            style={{ border: `1px solid ${c.goldLine}`, color: c.goldSolid }}>
-            立即起盘
-          </motion.button>
+            style={{ border: `1px solid ${c.goldLine}`, color: c.goldSolid }}>{vi("立即起盘")}</motion.button>
         </div>
       </nav>
 
@@ -515,9 +506,7 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="flex items-center justify-center gap-3 mb-8">
             <div className="h-px w-12" style={{ background: `linear-gradient(to right, transparent, ${c.goldLine})` }} />
-            <span className="text-[11px] tracking-[0.45em] transition-colors duration-300" style={{ color: c.tagText }}>
-              紫微斗数 · 倪海厦体系
-            </span>
+            <span className="text-[11px] tracking-[0.45em] transition-colors duration-300" style={{ color: c.tagText }}>{vi("紫微斗数 · 倪海厦体系")}</span>
             <div className="h-px w-12" style={{ background: `linear-gradient(to left, transparent, ${c.goldLine})` }} />
           </motion.div>
 
@@ -530,29 +519,21 @@ export default function HomePage() {
               style={{
                 fontSize: 'clamp(56px, 10vw, 124px)',
                 letterSpacing: '0.07em',
-              }}>
-              紫微命盘
-            </h1>
+              }}>{vi("紫微命盘")}</h1>
           </motion.div>
 
           <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.45 }}
             className="text-base md:text-lg tracking-[0.18em] mb-2"
-            style={{ color: c.textSecond, fontWeight: 500 }}>
-            紫微为门 · 天地人为路 · 倪海厦为师
-          </motion.p>
+            style={{ color: c.textSecond, fontWeight: 500 }}>{vi("紫微为门 · 天地人为路 · 倪海厦为师")}</motion.p>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ duration: 0.7, delay: 0.55 }}
             className="text-xs md:text-sm tracking-[0.3em] mb-6"
-            style={{ color: c.textMuted, opacity: 0.85 }}>
-            AI 答疑 · 知行合一
-          </motion.p>
+            style={{ color: c.textMuted, opacity: 0.85 }}>{vi("AI 答疑 · 知行合一")}</motion.p>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ duration: 0.7, delay: 0.65 }}
             className="text-sm max-w-xl mx-auto leading-relaxed mb-10"
-            style={{ color: c.textMuted }}>
-            输入出生年月日时，生成专属紫微斗数命盘 — 后续天纪、地纪、人纪学习模块陆续开放。
-          </motion.p>
+            style={{ color: c.textMuted }}>{vi("输入出生年月日时，生成专属紫微斗数命盘 — 后续天纪、地纪、人纪学习模块陆续开放。")}</motion.p>
 
           {/* CTA */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
@@ -562,9 +543,7 @@ export default function HomePage() {
               whileHover={{ y: -2, filter: 'brightness(1.06)' }} whileTap={{ scale: 0.97 }}
               onClick={() => router.push('/chart')}
               className="px-12 py-4 font-semibold text-base tracking-widest rounded-full"
-              style={{ background: c.ctaBg, color: c.ctaText }}>
-              立即起盘
-            </motion.button>
+              style={{ background: c.ctaBg, color: c.ctaText }}>{vi("立即起盘")}</motion.button>
           </motion.div>
 
           {/* 十四主星 */}
@@ -577,79 +556,17 @@ export default function HomePage() {
                 transition={{ delay: 1.05 + i * 0.03, duration: 0.35 }}
                 className="flex items-center justify-center px-2 py-1 rounded-full"
                 style={{ background: c.starBg, border: `1px solid ${c.starBorder}` }}>
-                <span className="text-[11px] tracking-wide" style={{ color: c.starText }}>{star.name}</span>
+                <span className="text-[11px] tracking-wide" style={{ color: c.starText }}>{vi(star.name)}</span>
               </motion.div>
             ))}
           </motion.div>
-        </motion.div>
-
-        {/* 上线公告便利贴 — 桌面端绝对定位右侧 */}
-        <motion.div
-          initial={{ opacity: 0, x: 30, rotate: 0 }}
-          animate={{ opacity: 1, x: 0, rotate: -4 }}
-          transition={{ delay: 1.4, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
-          className="absolute hidden lg:block pointer-events-none"
-          style={{
-            right: 'clamp(2%, 6vw, 8%)',
-            top: '54%',
-            maxWidth: '240px',
-          }}
-        >
-          <div style={{
-            background: 'linear-gradient(135deg, #fff5e3 0%, #ffe1c0 100%)',
-            border: '2px dashed rgba(232,132,62,0.45)',
-            borderRadius: '16px',
-            padding: '14px 18px',
-            boxShadow: '0 8px 24px rgba(196,90,45,0.18), 0 2px 6px rgba(196,90,45,0.1)',
-            fontFamily: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
-          }}>
-            <div style={{ fontSize: '20px', marginBottom: '6px', lineHeight: 1 }}>🎁</div>
-            <div style={{ fontSize: '13px', lineHeight: 1.7, color: '#8b3a1a', fontWeight: 500 }}>
-              <span style={{ color: '#c45a2d', fontWeight: 700, fontSize: '14px' }}>5/1 — 5/8</span>
-              <span> 限时回馈</span>
-            </div>
-            <div style={{ fontSize: '13px', lineHeight: 1.7, color: '#8b3a1a', fontWeight: 500 }}>
-              全部功能 + AI 提问
-              <strong style={{ color: '#c45a2d' }}> 全免费</strong>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* 上线公告便利贴 — 手机端正常流式显示（hero 内容下方居中） */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0, rotate: -2 }}
-          transition={{ delay: 1.4, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
-          className="lg:hidden mx-auto mt-8 mb-2 pointer-events-none"
-          style={{
-            maxWidth: 'min(280px, 84vw)',
-          }}
-        >
-          <div style={{
-            background: 'linear-gradient(135deg, #fff5e3 0%, #ffe1c0 100%)',
-            border: '2px dashed rgba(232,132,62,0.45)',
-            borderRadius: '14px',
-            padding: '12px 16px',
-            boxShadow: '0 6px 18px rgba(196,90,45,0.16), 0 2px 4px rgba(196,90,45,0.08)',
-            fontFamily: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '18px', marginBottom: '4px', lineHeight: 1 }}>🎁</div>
-            <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#8b3a1a', fontWeight: 500 }}>
-              <span style={{ color: '#c45a2d', fontWeight: 700, fontSize: '13px' }}>5/1 — 5/8</span>
-              <span> 限时回馈</span>
-            </div>
-            <div style={{ fontSize: '12px', lineHeight: 1.7, color: '#8b3a1a', fontWeight: 500 }}>
-              全部功能 + AI <strong style={{ color: '#c45a2d' }}>全免费</strong>
-            </div>
-          </div>
         </motion.div>
 
         {/* 滚动提示（绝对定位，不影响 hero opacity 计算） */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           transition={{ delay: 2, duration: 1 }}
           className="absolute bottom-6 left-0 right-0 flex flex-col items-center gap-2 pointer-events-none">
-          <span className="text-[9px] tracking-[0.4em] uppercase" style={{ color: c.scrollText }}>探索更多</span>
+          <span className="text-[9px] tracking-[0.4em] uppercase" style={{ color: c.scrollText }}>{vi("探索更多")}</span>
           <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
             className="w-px h-8" style={{ background: `linear-gradient(to bottom, ${c.scrollLine}, transparent)` }} />
         </motion.div>
@@ -666,12 +583,12 @@ export default function HomePage() {
             transition: 'background 0.4s ease',
           }} />
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-          <span className="font-bold" style={{ fontSize: 'clamp(220px, 38vw, 460px)', color: 'rgba(212,168,67,0.012)', lineHeight: 1, fontFamily: 'serif' }}>命</span>
+          <span className="font-bold" style={{ fontSize: 'clamp(220px, 38vw, 460px)', color: 'rgba(212,168,67,0.012)', lineHeight: 1, fontFamily: 'serif' }}>{vi("命")}</span>
         </div>
         <FadeIn className="relative mx-auto text-center w-full" y={20}>
           <div className="flex items-center justify-center gap-4 mb-8">
             <div className="h-px w-16" style={{ background: 'linear-gradient(to right, transparent, rgba(212,168,67,0.45))' }} />
-            <span className="text-[10px] tracking-[0.55em] uppercase" style={{ color: 'rgba(212,168,67,0.5)' }}>命 · 运 · 观</span>
+            <span className="text-[10px] tracking-[0.55em] uppercase" style={{ color: 'rgba(212,168,67,0.5)' }}>{vi("命 · 运 · 观")}</span>
             <div className="h-px w-16" style={{ background: 'linear-gradient(to left, transparent, rgba(212,168,67,0.45))' }} />
           </div>
           <div className="space-y-3" style={{ maxWidth: '840px', margin: '0 auto' }}>
@@ -684,16 +601,14 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: line.delay }}
                 className="tracking-wider" style={{ fontSize: line.size, color: line.color, fontWeight: 400 }}>
-                {line.text}
+                {vi(line.text)}
               </motion.p>
             ))}
             <motion.p
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.45 }}
               className={`grad-text ${theme === 'dark' ? 'grad-text-dark' : 'grad-text-light'} font-bold`}
-              style={{ fontSize: 'clamp(24px, 3.4vw, 48px)', letterSpacing: '0.05em', lineHeight: 1.35 }}>
-              最终书写属于自己的人生剧本
-            </motion.p>
+              style={{ fontSize: 'clamp(24px, 3.4vw, 48px)', letterSpacing: '0.05em', lineHeight: 1.35 }}>{vi("最终书写属于自己的人生剧本")}</motion.p>
           </div>
         </FadeIn>
       </section>
@@ -711,12 +626,8 @@ export default function HomePage() {
             <span className="text-[10px] tracking-[0.4em] uppercase" style={{ color: c.goldSolid, opacity: 0.7 }}>Curriculum</span>
             <div className="h-px w-12" style={{ background: `linear-gradient(to left, transparent, ${c.goldLine})` }} />
           </div>
-          <div className="text-2xl lg:text-3xl font-bold mb-2 tracking-[0.15em]" style={{ color: c.textPrimary }}>
-            倪师方法论 · 渐次展开
-          </div>
-          <div className="text-xs lg:text-sm tracking-[0.1em]" style={{ color: c.textMuted }}>
-            从紫微入门，逐步开放天纪 / 地纪 / 人纪学习模块
-          </div>
+          <div className="text-2xl lg:text-3xl font-bold mb-2 tracking-[0.15em]" style={{ color: c.textPrimary }}>{vi("倪师方法论 · 渐次展开")}</div>
+          <div className="text-xs lg:text-sm tracking-[0.1em]" style={{ color: c.textMuted }}>{vi("从紫微入门，逐步开放天纪 / 地纪 / 人纪学习模块")}</div>
         </FadeIn>
 
         <div className="max-w-sm lg:max-w-5xl mx-auto relative">
@@ -753,13 +664,13 @@ export default function HomePage() {
                       color: ready ? '#fff' : c.textMuted,
                       boxShadow: ready ? `0 4px 16px ${c.goldSolid}55` : 'none',
                     }}>
-                    <span className="text-2xl">{s.icon}</span>
-                    {ready && (
+                    <span className="text-2xl">{vi(s.icon)}</span>
+                    {vi(ready && (
                       <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white"
                         style={{ background: '#10b981', boxShadow: '0 2px 6px rgba(16,185,129,0.4)' }}>
                         ✓
                       </div>
-                    )}
+                    ))}
                   </div>
                   {/* 文字组：手机端右排单列；桌面端居中堆叠 */}
                   <div className="flex-1 lg:flex-none flex flex-col items-start lg:items-center min-w-0">
@@ -767,13 +678,13 @@ export default function HomePage() {
                     <div className="flex items-baseline gap-2 lg:flex-col lg:gap-0 lg:mb-1">
                       <div className="text-[10px] tracking-[0.25em] lg:mb-1.5"
                         style={{ color: ready ? '#10b981' : c.textMuted, fontWeight: 500 }}>
-                        {s.when}
+                        {vi(s.when)}
                       </div>
                       <div className="text-base lg:text-xl font-semibold tracking-[0.15em]"
                         style={{ color: c.textPrimary }}>
-                        {s.name}
+                        {vi(s.name)}
                       </div>
-                      {s.note && (
+                      {vi(s.note && (
                         <div className="text-[9px] tracking-[0.15em] px-2 py-0.5 rounded-full lg:hidden"
                           style={{
                             color: c.goldSolid,
@@ -781,12 +692,12 @@ export default function HomePage() {
                             border: `1px solid ${c.goldLine}`,
                             opacity: 0.85,
                           }}>
-                          {s.note}
+                          {vi(s.note)}
                         </div>
-                      )}
+                      ))}
                     </div>
                     {/* 桌面专属 note（手机已在顶行 inline 展示）*/}
-                    {s.note && (
+                    {vi(s.note && (
                       <div className="hidden lg:block text-[9px] tracking-[0.15em] mb-1.5 px-2 py-0.5 rounded-full"
                         style={{
                           color: c.goldSolid,
@@ -794,13 +705,13 @@ export default function HomePage() {
                           border: `1px solid ${c.goldLine}`,
                           opacity: 0.85,
                         }}>
-                        {s.note}
+                        {vi(s.note)}
                       </div>
-                    )}
+                    ))}
                     {/* 简介 */}
                     <div className="text-[11px] lg:text-xs leading-relaxed lg:max-w-[200px] mt-0.5 lg:mt-0"
                       style={{ color: c.textSecond }}>
-                      {s.desc}
+                      {vi(s.desc)}
                     </div>
                   </div>
                 </motion.div>
@@ -823,7 +734,7 @@ export default function HomePage() {
                   <FadeIn delay={0}>
                     <div className="flex items-center gap-3 mb-6">
                       <div className="h-px w-8" style={{ background: c.goldLine }} />
-                      <span className="text-[10px] tracking-[0.5em] uppercase" style={{ color: c.tagText }}>{feature.tag}</span>
+                      <span className="text-[10px] tracking-[0.5em] uppercase" style={{ color: c.tagText }}>{vi(feature.tag)}</span>
                     </div>
                   </FadeIn>
                   <FadeIn delay={0.1}>
@@ -832,18 +743,18 @@ export default function HomePage() {
                         fontSize: i < 2 ? 'clamp(36px, 4vw, 56px)' : 'clamp(30px, 3.5vw, 48px)',
                         whiteSpace: 'pre-line',
                       }}>
-                      {feature.title}
+                      {vi(feature.title)}
                     </h2>
                   </FadeIn>
                   <FadeIn delay={0.2}>
-                    <p className="text-base mb-8 leading-relaxed" style={{ color: c.textSecond }}>{feature.subtitle}</p>
+                    <p className="text-base mb-8 leading-relaxed" style={{ color: c.textSecond }}>{vi(feature.subtitle)}</p>
                   </FadeIn>
                   <div className="space-y-4">
                     {feature.points.map((point, j) => (
                       <FadeIn key={j} delay={0.25 + j * 0.08}>
                         <div className="flex gap-3">
                           <div className="flex-shrink-0 mt-2 w-1 h-1 rounded-full" style={{ background: c.goldSolid, opacity: 0.6 }} />
-                          <p className="text-sm leading-relaxed" style={{ color: c.textMuted }}>{point}</p>
+                          <p className="text-sm leading-relaxed" style={{ color: c.textMuted }}>{vi(point)}</p>
                         </div>
                       </FadeIn>
                     ))}
@@ -882,13 +793,8 @@ export default function HomePage() {
                 <div className="h-px w-12" style={{ background: `linear-gradient(to left, transparent, ${c.goldLine})` }} />
               </div>
               <h2 className={`grad-text ${theme === 'dark' ? 'grad-text-dark' : 'grad-text-light'} font-bold mb-5 tracking-tight`}
-                style={{ fontSize: 'clamp(32px, 4vw, 48px)' }}>
-                天 · 地 · 人
-              </h2>
-              <p className="max-w-2xl mx-auto text-sm leading-relaxed" style={{ color: c.textSecond }}>
-                倪海厦老师的核心命运观：命运从来不是人生的全部。<br />
-                他将影响人生的力量分为三个同等重要的维度。
-              </p>
+                style={{ fontSize: 'clamp(32px, 4vw, 48px)' }}>{vi("天 · 地 · 人")}</h2>
+              <p className="max-w-2xl mx-auto text-sm leading-relaxed" style={{ color: c.textSecond }}>{vi("倪海厦老师的核心命运观：命运从来不是人生的全部。")}<br />{vi("他将影响人生的力量分为三个同等重要的维度。")}</p>
             </div>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
@@ -902,28 +808,26 @@ export default function HomePage() {
                   className="rounded-2xl p-7 h-full flex flex-col"
                   style={{ background: c.cardBg, border: `1px solid ${item.borderColor}`, boxShadow: c.cardShadow }}>
                   <div className="flex items-start justify-between mb-5">
-                    <div className="text-5xl font-bold leading-none" style={{ color: item.color }}>{item.glyph}</div>
+                    <div className="text-5xl font-bold leading-none" style={{ color: item.color }}>{vi(item.glyph)}</div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold" style={{ color: item.color }}>{item.pct}</div>
+                      <div className="text-2xl font-bold" style={{ color: item.color }}>{vi(item.pct)}</div>
                       <div className="text-[9px] mt-0.5 tracking-widest" style={{ color: c.textMuted }}>of life</div>
                     </div>
                   </div>
                   <div className="mb-3">
-                    <div className="text-sm font-medium mb-0.5" style={{ color: item.color }}>{item.label}</div>
-                    <div className="text-[10px] tracking-wider" style={{ color: c.textMuted }}>{item.sub}</div>
+                    <div className="text-sm font-medium mb-0.5" style={{ color: item.color }}>{vi(item.label)}</div>
+                    <div className="text-[10px] tracking-wider" style={{ color: c.textMuted }}>{vi(item.sub)}</div>
                   </div>
                   <div className="h-px mb-4" style={{ background: item.borderColor }} />
-                  <p className="text-xs leading-relaxed flex-1" style={{ color: c.textSecond }}>{item.desc}</p>
+                  <p className="text-xs leading-relaxed flex-1" style={{ color: c.textSecond }}>{vi(item.desc)}</p>
                 </motion.div>
               </FadeIn>
             ))}
           </div>
           <FadeIn delay={0.3}>
             <div className="mt-10 text-center">
-              <p className="text-sm leading-relaxed" style={{ color: c.textSecond }}>
-                「命运不是人生的全部，加上地理位置和人念，才是。」
-              </p>
-              <p className="mt-2 text-[10px] tracking-widest" style={{ color: c.tagText }}>— 倪海厦</p>
+              <p className="text-sm leading-relaxed" style={{ color: c.textSecond }}>{vi("「命运不是人生的全部，加上地理位置和人念，才是。」")}</p>
+              <p className="mt-2 text-[10px] tracking-widest" style={{ color: c.tagText }}>{vi("— 倪海厦")}</p>
             </div>
           </FadeIn>
         </div>
@@ -941,13 +845,8 @@ export default function HomePage() {
                 <div className="h-px w-12" style={{ background: `linear-gradient(to left, transparent, ${c.goldLine})` }} />
               </div>
               <h2 className={`grad-text ${theme === 'dark' ? 'grad-text-dark' : 'grad-text-light'} font-bold mb-6 tracking-tight`}
-                style={{ fontSize: 'clamp(32px, 4vw, 48px)' }}>
-                倪海厦老师
-              </h2>
-              <p className="max-w-2xl mx-auto leading-relaxed text-sm" style={{ color: c.textSecond }}>
-                当代华人圈最具影响力的中医与术数大家之一<br />
-                美国汉唐中医学院创办人 ·「人纪」「天纪」两大教学体系传世
-              </p>
+                style={{ fontSize: 'clamp(32px, 4vw, 48px)' }}>{vi("倪海厦老师")}</h2>
+              <p className="max-w-2xl mx-auto leading-relaxed text-sm" style={{ color: c.textSecond }}>{vi("当代华人圈最具影响力的中医与术数大家之一")}<br />{vi("美国汉唐中医学院创办人 ·「人纪」「天纪」两大教学体系传世")}</p>
             </div>
           </FadeIn>
 
@@ -962,48 +861,25 @@ export default function HomePage() {
                 ].map(item => (
                   <div key={item.label} className="text-center rounded-xl px-4 py-3"
                     style={{ border: `1px solid ${c.niDivider}`, background: 'rgba(255,255,255,0.02)' }}>
-                    <div className="text-[10px] tracking-[0.3em] mb-1" style={{ color: c.textFaint }}>{item.label}</div>
-                    <div className="text-2xl font-semibold mb-0.5" style={{ color: c.goldSolid }}>{item.value}</div>
-                    <div className="text-[11px]" style={{ color: c.textMuted }}>{item.sub}</div>
+                    <div className="text-[10px] tracking-[0.3em] mb-1" style={{ color: c.textFaint }}>{vi(item.label)}</div>
+                    <div className="text-2xl font-semibold mb-0.5" style={{ color: c.goldSolid }}>{vi(item.value)}</div>
+                    <div className="text-[11px]" style={{ color: c.textMuted }}>{vi(item.sub)}</div>
                   </div>
                 ))}
               </div>
               <div className="h-px mb-8" style={{ background: c.niDivider }} />
               <div className="space-y-4 text-sm leading-relaxed max-w-3xl mx-auto" style={{ color: c.textSecond }}>
                 <p>
-                  <strong style={{ color: c.goldSolid }}>生平履历</strong>：
-                  倪海厦先生（1954–2012）出生于台湾，早年师承多位中医名家，专研经方派（《伤寒论》传承）。
-                  中年赴美行医，在美国创立<strong>汉唐中医学院</strong>，二十余年间系统传授中医与传统术数。
-                  2012 年 1 月 31 日因肝癌在台湾离世，享年 58 岁。
-                </p>
+                  <strong style={{ color: c.goldSolid }}>{vi("生平履历")}</strong>{vi("：倪海厦先生（1954–2012）出生于台湾，早年师承多位中医名家，专研经方派（《伤寒论》传承）。中年赴美行医，在美国创立")}<strong>{vi("汉唐中医学院")}</strong>{vi("，二十余年间系统传授中医与传统术数。2012 年 1 月 31 日因肝癌在台湾离世，享年 58 岁。")}</p>
                 <p>
-                  <strong style={{ color: c.goldSolid }}>教学体系</strong>：
-                  倪师将毕生所学整理为两大公开教学系列。
-                  <strong>「人纪」</strong>涵盖《针灸大成》《神农本草经》《黄帝内经》《伤寒论》《金匮要略》——
-                  这是「人之纪」，奠定中医学习的完整路径；
-                  <strong>「天纪」</strong>涵盖紫微斗数与《易经》——这是「天之纪」，是术数研究的体系化成果。
-                  两者相合，是倪师留给后世最完整的传承。
-                </p>
+                  <strong style={{ color: c.goldSolid }}>{vi("教学体系")}</strong>{vi("：倪师将毕生所学整理为两大公开教学系列。")}<strong>{vi("「人纪」")}</strong>{vi("涵盖《针灸大成》《神农本草经》《黄帝内经》《伤寒论》《金匮要略》——这是「人之纪」，奠定中医学习的完整路径；")}<strong>{vi("「天纪」")}</strong>{vi("涵盖紫微斗数与《易经》——这是「天之纪」，是术数研究的体系化成果。两者相合，是倪师留给后世最完整的传承。")}</p>
                 <p>
-                  <strong style={{ color: c.goldSolid }}>紫微立场</strong>：
-                  倪师在紫微斗数上明确属<strong>南派三合派</strong>，主张「以命宫为本、以三方四正为用、以四化为纲」。
-                  他在《天纪》课程中明言：「<em>飞星（四化）飞来飞去太复杂，不搞这个，毕竟大道至简</em>」——
-                  这一立场将其与繁琐的飞星派清晰区分。
-                </p>
+                  <strong style={{ color: c.goldSolid }}>{vi("紫微立场")}</strong>{vi("：倪师在紫微斗数上明确属")}<strong>{vi("南派三合派")}</strong>{vi("，主张「以命宫为本、以三方四正为用、以四化为纲」。他在《天纪》课程中明言：「")}<em>{vi("飞星（四化）飞来飞去太复杂，不搞这个，毕竟大道至简")}</em>{vi("」——这一立场将其与繁琐的飞星派清晰区分。")}</p>
                 <p>
-                  <strong style={{ color: c.goldSolid }}>治学态度</strong>：
-                  倪师反对死记硬背口诀，强调「理解原理胜过背诵」「逻辑可复核胜过神秘玄学」。
-                  这种态度让紫微斗数从师徒密传的封闭体系，走向系统化、可验证、可学习的现代知识体系。
-                </p>
+                  <strong style={{ color: c.goldSolid }}>{vi("治学态度")}</strong>{vi("：倪师反对死记硬背口诀，强调「理解原理胜过背诵」「逻辑可复核胜过神秘玄学」。这种态度让紫微斗数从师徒密传的封闭体系，走向系统化、可验证、可学习的现代知识体系。")}</p>
                 <p>
-                  <strong style={{ color: c.goldSolid }}>当代影响</strong>：
-                  倪师的讲课视频在 B 站、YouTube 与各大平台广泛流传，是新一代命理与中医爱好者公认的入门必修。
-                  他不仅是紫微斗数的传承者，更是把传统命理与中医带入现代知识体系的关键人物之一。
-                </p>
-                <p style={{ fontSize: '11px', color: c.textMuted, fontStyle: 'italic', marginTop: '12px' }}>
-                  本平台所有解读基于倪师《天纪》公开教学讲义、《紫微斗数全书》明版、传统三合派古籍整理而成，
-                  仅作文化与个人成长参考。倪师本人与本平台无任何商业关联。
-                </p>
+                  <strong style={{ color: c.goldSolid }}>{vi("当代影响")}</strong>{vi("：倪师的讲课视频在 B 站、YouTube 与各大平台广泛流传，是新一代命理与中医爱好者公认的入门必修。他不仅是紫微斗数的传承者，更是把传统命理与中医带入现代知识体系的关键人物之一。")}</p>
+                <p style={{ fontSize: '11px', color: c.textMuted, fontStyle: 'italic', marginTop: '12px' }}>{vi("本平台所有解读基于倪师《天纪》公开教学讲义、《紫微斗数全书》明版、传统三合派古籍整理而成，仅作文化与个人成长参考。倪师本人与本平台无任何商业关联。")}</p>
               </div>
             </div>
           </FadeIn>
@@ -1017,11 +893,11 @@ export default function HomePage() {
                   <div className="flex items-start gap-3 mb-3">
                     <div className="flex-shrink-0 w-5 h-5 rounded-full border flex items-center justify-center mt-0.5"
                       style={{ borderColor: c.goldLine }}>
-                      <span className="text-[9px]" style={{ color: c.goldSolid }}>{i + 1}</span>
+                      <span className="text-[9px]" style={{ color: c.goldSolid }}>{vi(i + 1)}</span>
                     </div>
-                    <h3 className="text-sm font-medium leading-relaxed" style={{ color: c.goldSolid }}>{teaching.title}</h3>
+                    <h3 className="text-sm font-medium leading-relaxed" style={{ color: c.goldSolid }}>{vi(teaching.title)}</h3>
                   </div>
-                  <p className="text-xs leading-relaxed pl-8" style={{ color: c.textSecond }}>{teaching.body}</p>
+                  <p className="text-xs leading-relaxed pl-8" style={{ color: c.textSecond }}>{vi(teaching.body)}</p>
                 </motion.div>
               </FadeIn>
             ))}
@@ -1045,13 +921,8 @@ export default function HomePage() {
                 <div className="h-px w-8" style={{ background: c.goldLine }} />
               </div>
               <h2 className={`grad-text ${theme === 'dark' ? 'grad-text-dark' : 'grad-text-light'} font-bold mb-4 tracking-tight`}
-                style={{ fontSize: 'clamp(26px, 3.5vw, 40px)' }}>
-                紫微合盘
-              </h2>
-              <p className="text-sm leading-relaxed mb-8 max-w-lg mx-auto" style={{ color: c.textSecond }}>
-                输入两个人的出生信息，AI 基于倪海厦体系分析夫妻宫互参、命宫兼容性与三方四正交互，<br className="hidden md:block" />
-                给出感情匹配度、合伙可行性与最佳相处建议。
-              </p>
+                style={{ fontSize: 'clamp(26px, 3.5vw, 40px)' }}>{vi("紫微合盘")}</h2>
+              <p className="text-sm leading-relaxed mb-8 max-w-lg mx-auto" style={{ color: c.textSecond }}>{vi("输入两个人的出生信息，AI 基于倪海厦体系分析夫妻宫互参、命宫兼容性与三方四正交互，")}<br className="hidden md:block" />{vi("给出感情匹配度、合伙可行性与最佳相处建议。")}</p>
               <div className="flex justify-center gap-3 flex-wrap mb-6">
                 {['感情匹配度分析', '合伙创业评估', '亲子缘分解读', '婚前相性评估'].map(item => (
                   <span key={item} style={{
@@ -1060,7 +931,7 @@ export default function HomePage() {
                     border: `1px solid ${c.goldLine}`,
                     color: c.goldSolid,
                   }}>
-                    {item}
+                    {vi(item)}
                   </span>
                 ))}
               </div>
@@ -1073,9 +944,7 @@ export default function HomePage() {
                   border: `1px solid ${c.goldLine}`,
                   color: c.goldSolid,
                   cursor: 'pointer',
-                }}>
-                开始合盘分析
-              </motion.button>
+                }}>{vi("开始合盘分析")}</motion.button>
             </FadeIn>
           </div>
         </div>
@@ -1084,22 +953,15 @@ export default function HomePage() {
       {/* ══ 最终 CTA ══════════════════════════════════════ */}
       <section className="relative z-10 py-40 px-6 text-center" style={{ background: c.altSection }}>
         <FadeIn>
-          <p className="text-[10px] tracking-[0.6em] uppercase mb-6" style={{ color: c.tagText }}>开始你的命盘之旅</p>
+          <p className="text-[10px] tracking-[0.6em] uppercase mb-6" style={{ color: c.tagText }}>{vi("开始你的命盘之旅")}</p>
           <h2 className={`grad-text ${theme === 'dark' ? 'grad-text-dark' : 'grad-text-light'} font-bold mb-8 tracking-tight leading-tight`}
-            style={{ fontSize: 'clamp(32px, 5vw, 60px)' }}>
-            你的紫微命盘<br />等你解读
-          </h2>
-          <p className="text-sm mb-10 max-w-md mx-auto leading-relaxed" style={{ color: c.textSecond }}>
-            输入出生年月日时，在几秒内生成你的专属命盘<br />
-            再由 AI 按倪海厦体系为你深度解读
-          </p>
+            style={{ fontSize: 'clamp(32px, 5vw, 60px)' }}>{vi("你的紫微命盘")}<br />{vi("等你解读")}</h2>
+          <p className="text-sm mb-10 max-w-md mx-auto leading-relaxed" style={{ color: c.textSecond }}>{vi("输入出生年月日时，在几秒内生成你的专属命盘")}<br />{vi("再由 AI 按倪海厦体系为你深度解读")}</p>
           <motion.button
             whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
             onClick={() => router.push('/chart')}
             className="px-14 py-4 font-semibold text-base tracking-widest rounded-full"
-            style={{ background: c.ctaBg, color: c.ctaText }}>
-            免费起盘
-          </motion.button>
+            style={{ background: c.ctaBg, color: c.ctaText }}>{vi("免费起盘")}</motion.button>
           <div className="mt-4 flex flex-wrap gap-3 justify-center">
             <motion.a
               href="/knowledge"
@@ -1110,9 +972,7 @@ export default function HomePage() {
                 border: `1px solid ${c.goldLine}`,
                 background: 'transparent',
                 textDecoration: 'none',
-              }}>
-              ✦ 紫微斗数知识库 →
-            </motion.a>
+              }}>{vi("✦ 紫微斗数知识库 →")}</motion.a>
             <motion.a
               href="/library"
               whileHover={{ scale: 1.02 }}
@@ -1122,9 +982,7 @@ export default function HomePage() {
                 border: `1px solid ${c.goldLine}`,
                 background: 'transparent',
                 textDecoration: 'none',
-              }}>
-              📜 古籍原典库 →
-            </motion.a>
+              }}>{vi("📜 古籍原典库 →")}</motion.a>
           </div>
         </FadeIn>
       </section>
@@ -1136,9 +994,7 @@ export default function HomePage() {
         {/* 4 板块导航占位（已上线 + 即将开放）*/}
         <div className="max-w-4xl mx-auto mb-8">
           <div className="text-[9px] tracking-[0.3em] text-center mb-4 uppercase"
-            style={{ color: c.textMuted, opacity: 0.6 }}>
-            倪师方法论 · 学术体系
-          </div>
+            style={{ color: c.textMuted, opacity: 0.6 }}>{vi("倪师方法论 · 学术体系")}</div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             {SECTIONS.map(s => {
               const ready = s.status === 'ready';
@@ -1158,11 +1014,11 @@ export default function HomePage() {
                 >
                   <div className="text-base font-semibold mb-0.5 tracking-[0.1em]"
                     style={{ color: ready ? c.goldSolid : c.textMuted }}>
-                    {s.name}
+                    {vi(s.name)}
                   </div>
                   <div className="text-[9px] tracking-wider"
                     style={{ color: ready ? '#10b981' : c.textMuted }}>
-                    {ready ? '✓ 已上线' : `${s.when} 开放`}
+                    {vi(ready ? '✓ 已上线' : `${s.when} 开放`)}
                   </div>
                 </a>
               );
@@ -1171,18 +1027,13 @@ export default function HomePage() {
         </div>
 
         <div className="text-center">
-          <p className="text-[10px] tracking-wider mb-3" style={{ color: c.footerText }}>
-            紫微命盘 · 基于倪海厦正宗体系 · 仅供参考，命运掌握在自己手中
-          </p>
+          <p className="text-[10px] tracking-wider mb-3" style={{ color: c.footerText }}>{vi("紫微命盘 · 基于倪海厦正宗体系 · 仅供参考，命运掌握在自己手中")}</p>
           <p className="text-[10px] tracking-wider mb-3 max-w-2xl mx-auto leading-relaxed"
-            style={{ color: c.footerText, opacity: 0.85 }}>
-            本平台基于中国传统文化研究，仅提供学习参考。<br className="sm:hidden" />
-            不构成任何医疗、投资、法律或重大决策建议。
-          </p>
+            style={{ color: c.footerText, opacity: 0.85 }}>{vi("本平台基于中国传统文化研究，仅提供学习参考。")}<br className="sm:hidden" />{vi("不构成任何医疗、投资、法律或重大决策建议。")}</p>
           <p className="text-[10px] tracking-wider" style={{ color: c.footerText }}>
-            <a href="/terms" style={{ color: c.footerText, textDecoration: 'underline' }}>服务条款</a>
+            <a href="/terms" style={{ color: c.footerText, textDecoration: 'underline' }}>{vi("服务条款")}</a>
             {' · '}
-            <a href="/privacy" style={{ color: c.footerText, textDecoration: 'underline' }}>隐私政策</a>
+            <a href="/privacy" style={{ color: c.footerText, textDecoration: 'underline' }}>{vi("隐私政策")}</a>
           </p>
         </div>
       </footer>

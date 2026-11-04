@@ -6,10 +6,11 @@
 import Link from 'next/link';
 import { ALL_STARS, ALL_TOPICS, getKnowledge, STAR_BRIEF_SEO, STAR_TO_SLUG } from '@/lib/seo/knowledge';
 import { TOPIC_LABEL } from '@/lib/ziwei/db-analysis';
+import { vi } from '@/lib/i18n/vi';
 
 export const metadata = {
-  title: '紫微斗数知识库 · 14 主星 × 13 宫位 · 倪海厦正宗体系',
-  description: '基于倪海厦《天纪》体系与古籍《紫微斗数全集》《骨髓赋》编纂的紫微斗数知识库。覆盖 14 主星在 13 个宫位的完整论断，含一句话定调、核心论断、命盘依据、经典出处。',
+  title: vi('紫微斗数知识库 · 14 主星 × 13 宫位 · 倪海厦正宗体系'),
+  description: vi('基于倪海厦《天纪》体系与古籍《紫微斗数全集》《骨髓赋》编纂的紫微斗数知识库。覆盖 14 主星在 13 个宫位的完整论断，含一句话定调、核心论断、命盘依据、经典出处。'),
   keywords: ['紫微斗数', '倪海厦', '倪海厦紫微斗数', '紫微斗数全集', '紫微斗数全书', '14 主星', '12 宫位'],
 };
 
@@ -21,15 +22,9 @@ export default function KnowledgeHomePage() {
       {/* 顶栏 */}
       <div className="px-6 py-4 flex items-center justify-between"
         style={{ borderBottom: '1px solid rgba(184,146,42,0.15)', background: 'var(--bg-page)' }}>
-        <Link href="/" style={{ fontSize: '12px', color: 'var(--ac)', letterSpacing: '0.3em', textDecoration: 'none' }}>
-          ← 首页
-        </Link>
-        <div style={{ fontSize: '12px', color: 'var(--tx-3)', letterSpacing: '0.2em' }}>
-          倪师方法论 · 知识库
-        </div>
-        <Link href="/library" style={{ fontSize: '12px', color: 'var(--ac)', letterSpacing: '0.2em', textDecoration: 'none' }}>
-          古籍 →
-        </Link>
+        <Link href="/" style={{ fontSize: '12px', color: 'var(--ac)', letterSpacing: '0.3em', textDecoration: 'none' }}>{vi("← 首页")}</Link>
+        <div style={{ fontSize: '12px', color: 'var(--tx-3)', letterSpacing: '0.2em' }}>{vi("倪师方法论 · 知识库")}</div>
+        <Link href="/library" style={{ fontSize: '12px', color: 'var(--ac)', letterSpacing: '0.2em', textDecoration: 'none' }}>{vi("古籍 →")}</Link>
       </div>
 
       {/* Hero */}
@@ -39,25 +34,18 @@ export default function KnowledgeHomePage() {
           <span style={{ fontSize: '11px', color: 'var(--ac)', letterSpacing: '0.4em' }}>KNOWLEDGE BASE</span>
           <div style={{ height: '1px', width: '48px', background: 'linear-gradient(to left, transparent, rgba(184,146,42,0.4))' }} />
         </div>
-        <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 700, color: 'var(--tx-0)', letterSpacing: '0.15em', marginBottom: '12px' }}>
-          紫微斗数知识库
-        </h1>
-        <p style={{ fontSize: '14px', color: 'var(--tx-2)', letterSpacing: '0.08em', maxWidth: '600px', margin: '0 auto', lineHeight: 1.7 }}>
-          14 主星 × 13 宫位 = <strong style={{ color: 'var(--ac)' }}>{ALL_STARS.length * ALL_TOPICS.length}</strong> 项专题<br />
-          基于倪海厦《天纪》体系编纂 · 含古籍引证
-        </p>
+        <h1 style={{ fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 700, color: 'var(--tx-0)', letterSpacing: '0.15em', marginBottom: '12px' }}>{vi("紫微斗数知识库")}</h1>
+        <p style={{ fontSize: '14px', color: 'var(--tx-2)', letterSpacing: '0.08em', maxWidth: '600px', margin: '0 auto', lineHeight: 1.7 }}>{vi("14 主星 × 13 宫位 = ")}<strong style={{ color: 'var(--ac)' }}>{vi(ALL_STARS.length * ALL_TOPICS.length)}</strong>{vi(" 项专题")}<br />{vi("基于倪海厦《天纪》体系编纂 · 含古籍引证")}</p>
       </div>
 
       {/* 14 主星卡片 */}
       <div className="max-w-5xl mx-auto px-6 pb-20">
-        <div style={{ fontSize: '11px', color: 'var(--tx-3)', letterSpacing: '0.3em', textAlign: 'center', marginBottom: '24px' }}>
-          十四主星
-        </div>
+        <div style={{ fontSize: '11px', color: 'var(--tx-3)', letterSpacing: '0.3em', textAlign: 'center', marginBottom: '24px' }}>{vi("十四主星")}</div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
           {ALL_STARS.map(star => (
             <Link
               key={star}
-              href={`/knowledge/${STAR_TO_SLUG[star]}/overview`}
+              href={`/library/search?q=${encodeURIComponent(vi(star))}`}
               style={{
                 display: 'block',
                 padding: '14px 10px',
@@ -71,7 +59,7 @@ export default function KnowledgeHomePage() {
               className="hover:shadow-md hover:border-amber-400"
             >
               <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--tx-0)', letterSpacing: '0.15em' }}>
-                {star}
+                {vi(star)}
               </div>
             </Link>
           ))}
@@ -88,14 +76,13 @@ export default function KnowledgeHomePage() {
             }}>
               <div className="flex items-baseline gap-3 mb-2">
                 <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--tx-0)', letterSpacing: '0.1em' }}>
-                  {star}星
-                </span>
+                  {vi(star)}{vi("星")}</span>
                 <span style={{ fontSize: '11px', color: 'var(--tx-3)', letterSpacing: '0.15em' }}>
                   ZI WEI · 14 STARS
                 </span>
               </div>
               <p style={{ fontSize: '12px', color: 'var(--tx-2)', lineHeight: 1.7, marginBottom: '12px' }}>
-                {STAR_DESCRIPTIONS_QUICK[star] || ''}
+                {vi(STAR_DESCRIPTIONS_QUICK[star] || '')}
               </p>
               <div className="flex flex-wrap gap-2">
                 {ALL_TOPICS.map(t => {
@@ -114,8 +101,7 @@ export default function KnowledgeHomePage() {
                         color: 'var(--tx-2)',
                         textDecoration: 'none',
                       }}
-                    >
-                      入{k.palaceName} · {TOPIC_LABEL[t]}
+                    >{vi("入")}{vi(k.palaceName)} · {vi(TOPIC_LABEL[t])}
                     </Link>
                   );
                 })}

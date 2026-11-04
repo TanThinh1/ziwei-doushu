@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { vi } from '@/lib/i18n/vi';
 
 interface ScrollIntroProps {
   onComplete: () => void;
@@ -40,7 +41,7 @@ export default function ScrollIntro({ onComplete, skipLabel = '跳 过' }: Scrol
 
   return (
     <AnimatePresence>
-      {visible && (
+      {vi(visible && (
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -138,7 +139,7 @@ export default function ScrollIntro({ onComplete, skipLabel = '跳 过' }: Scrol
                   whiteSpace: 'nowrap',
                   opacity: 0.85,
                 }}>
-                  {BEIDOU.join(' · ')}
+                  {vi(BEIDOU.join(' · '))}
                 </div>
 
                 {/* 烫金细线 */}
@@ -158,9 +159,7 @@ export default function ScrollIntro({ onComplete, skipLabel = '跳 过' }: Scrol
                   margin: 0,
                   textShadow: '0 1px 0 rgba(255,250,235,0.3)',
                   whiteSpace: 'nowrap',
-                }}>
-                  紫微命盘
-                </h1>
+                }}>{vi("紫微命盘")}</h1>
 
                 {/* 副标 楷体 */}
                 <div style={{
@@ -171,9 +170,7 @@ export default function ScrollIntro({ onComplete, skipLabel = '跳 过' }: Scrol
                   marginTop: 'clamp(16px, 2.5vh, 24px)',
                   marginBottom: '6px',
                   whiteSpace: 'nowrap',
-                }}>
-                  观 天 之 象 · 察 人 之 命
-                </div>
+                }}>{vi("观 天 之 象 · 察 人 之 命")}</div>
                 <div style={{
                   fontSize: 'clamp(11px, 1.2vw, 14px)',
                   color: '#8b6410',
@@ -181,9 +178,7 @@ export default function ScrollIntro({ onComplete, skipLabel = '跳 过' }: Scrol
                   fontFamily: '"STSong", serif',
                   whiteSpace: 'nowrap',
                   opacity: 0.85,
-                }}>
-                  倪海厦《天纪》正宗体系
-                </div>
+                }}>{vi("倪海厦《天纪》正宗体系")}</div>
 
                 {/* 朱砂方印 */}
                 <motion.div
@@ -208,8 +203,8 @@ export default function ScrollIntro({ onComplete, skipLabel = '跳 过' }: Scrol
                     fontSize: 'clamp(11px, 1.2vw, 13px)',
                   }}
                 >
-                  <div style={{ display: 'flex', gap: '0' }}><span>王</span><span>多</span></div>
-                  <div style={{ display: 'flex', gap: '0' }}><span>鱼</span><span>印</span></div>
+                  <div style={{ display: 'flex', gap: '0' }}><span>{vi("王")}</span><span>{vi("多")}</span></div>
+                  <div style={{ display: 'flex', gap: '0' }}><span>{vi("鱼")}</span><span>{vi("印")}</span></div>
                 </motion.div>
 
                 {/* 底部装饰：八卦 */}
@@ -310,10 +305,10 @@ export default function ScrollIntro({ onComplete, skipLabel = '跳 过' }: Scrol
               e.currentTarget.style.color = 'rgba(232,220,196,0.55)';
             }}
           >
-            {skipLabel} →
+            {vi(skipLabel)} →
           </button>
         </motion.div>
-      )}
+      ))}
     </AnimatePresence>
   );
 }

@@ -3,9 +3,9 @@ import { useState } from 'react';
 import BirthForm from '@/components/BirthForm';
 import ChartBoard from '@/components/ChartBoard';
 import InsightPanel from '@/components/InsightPanel';
-import TimeNav, { type TimeView } from '@/components/TimeNav';
 import { generateChart } from '@/lib/ziwei/algorithm';
 import type { BirthInfo, ZiweiChart, Palace } from '@/lib/ziwei/types';
+import { vi } from '@/lib/i18n/vi';
 
 /**
  * 命盘页 —— 开源版「排盘引擎 Demo」
@@ -20,19 +20,13 @@ import type { BirthInfo, ZiweiChart, Palace } from '@/lib/ziwei/types';
 export default function ChartPage() {
   const [chart, setChart] = useState<ZiweiChart | null>(null);
   const [selectedPalace, setSelectedPalace] = useState<Palace | null>(null);
-  const [view, setView] = useState<TimeView>('mingpan');
-  const [liunianYear, setLiunianYear] = useState(() => new Date().getFullYear());
 
   // ── 未起盘：展示出生信息表单 ──
   if (!chart) {
     return (
       <main style={{ maxWidth: 720, margin: '0 auto', padding: '48px 20px' }}>
-        <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>紫微斗数排盘</h1>
-        <p style={{ color: '#888', marginBottom: 32, fontSize: 14, lineHeight: 1.7 }}>
-          输入出生年月日时，开源排盘引擎即时生成命盘。
-          <br />
-          （本页为引擎 Demo，完整商业版界面不在开源范围；排盘内核完全开放。）
-        </p>
+        <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>{vi("紫微斗数排盘")}</h1>
+        <p style={{ color: '#888', marginBottom: 32, fontSize: 14, lineHeight: 1.7 }}>{vi("输入出生年月日时，开源排盘引擎即时生成命盘。")}<br />{vi("（本页为引擎 Demo，完整商业版界面不在开源范围；排盘内核完全开放。）")}</p>
         <BirthForm onSubmit={(info: BirthInfo) => setChart(generateChart(info))} />
       </main>
     );
@@ -48,17 +42,7 @@ export default function ChartPage() {
           marginBottom: 16, padding: '6px 14px', cursor: 'pointer',
           border: '1px solid #ccc', borderRadius: 8, background: 'transparent',
         }}
-      >
-        ← 重新起盘
-      </button>
-
-      <TimeNav
-        chart={chart}
-        view={view}
-        liunianYear={liunianYear}
-        onViewChange={setView}
-        onYearChange={setLiunianYear}
-      />
+      >{vi("← 重新起盘")}</button>
 
       <div
         className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]"
